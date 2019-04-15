@@ -78,6 +78,10 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.List;
 //end of from github
+//test code
+import android.widget.EditText;
+import android.widget.TextView;
+//end of test code
 
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -93,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //Code from github
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
+    private Sensor mGyroscope;
     private  Sensor sensors;
 
     private LineChart mChart;
@@ -100,9 +105,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Thread thread;
     private boolean plotData = true;
     //End of from github
-    //Test code
-    private Sensor mGyroscope;
-    //End of test code
+
+    //test code file name
+    EditText fileName;
+    //end of test code file name
+    //testcode toggle button
+    ToggleButton toggleGyro = (ToggleButton) findViewById(R.id.toggleGyro); // initiate a toggle button
+    Boolean toggleGyroState = toggleGyro.isChecked();
+    //end of test code toggle button
 
 
     @Override
@@ -117,6 +127,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         buttonStart = (Button)findViewById(R.id.buttonStart);
         buttonStop = (Button)findViewById(R.id.buttonStop);
 
+        //test code file name
+        fileName  = (EditText) findViewById(R.id.fileName);
+        final String fileNameValue = fileName.getText().toString();
+        //end of test code file name
+
         buttonStart.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -125,18 +140,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 Log.d(TAG, "Writing to " + getStorageDir());
                 try {
-                    writer = new FileWriter(new File(getStorageDir(), "sensors_" + System.currentTimeMillis() + ".csv"));
+                    writer = new FileWriter(new File(getStorageDir(), "sensors_" + fileNameValue + System.currentTimeMillis() + ".csv"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 0);
                 manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 0);
-                manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED), 0);
+                /*manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED), 0);
                 manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), 0);
                 manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED), 0);
                 manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), 0);
-                manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), 0);
+                manager.registerListener(MainActivity.this, manager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), 0);*/
 
                 isRunning = true;
                 return true;
@@ -165,7 +180,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         //Test Code
+        /*
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        */
         //End of Test Code
 
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -178,9 +195,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         }
         //TestCode:
+        /*
         if (mGyroscope != null) {
             mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
         }
+        */
         //End of Test Code
 
         mChart = (LineChart) findViewById(R.id.chart1);
@@ -239,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //End of from github
 
         //Test Code
+        /*
         mChart2 = (LineChart) findViewById(R.id.chart2);
 
         // enable description text
@@ -291,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mChart2.setDrawBorders(false);
 
         feedMultiple();
+        */
         //End Of Test Code
     }
 
@@ -320,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
 
 //            data.addEntry(new Entry(set.getEntryCount(), (float) (Math.random() * 80) + 10f), 0);
-            data.addEntry(new Entry(set.getEntryCount(), event.values[0] + 5), 0);
+            data.addEntry(new Entry(set.getEntryCount(), event.values[0] ), 0);
             data.notifyDataChanged();
 
             // let the chart know it's data has changed
@@ -335,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         }
         //TestCode
+        /*
         LineData data2 = mChart2.getData();
 
         if (data2 != null) {
@@ -362,6 +384,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mChart2.moveViewToX(data.getEntryCount());
 
         }
+        */
         //End of Test COde
     }
 
@@ -426,8 +449,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if(isRunning) {
             try {
+                float xA=0, yA=0, zA=0, xG=0, yG=0, zG=0;
                 switch(evt.sensor.getType()) {
                     case Sensor.TYPE_ACCELEROMETER:
+                        xA = evt.values[0];
+                        yA =  evt.values[1];
+                        zA = evt.values[2];
+                    case Sensor.TYPE_GYROSCOPE:
+                        xG = evt.values[0];
+                        yG =  evt.values[1];
+                        zG = evt.values[2];
+                        break;
+
+                    /*case Sensor.TYPE_ACCELEROMETER:
                         writer.write(String.format("%d; ACC; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], 0.f, 0.f, 0.f));
                         break;
                     case Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
@@ -447,8 +481,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         break;
                     case Sensor.TYPE_GAME_ROTATION_VECTOR:
                         writer.write(String.format("%d; GAME_ROT; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], evt.values[3], 0.f, 0.f));
-                        break;
+                        break;*/
                 }
+                if(toggleGyroState = true)
+                    writer.write("" + xA + "," + yA + "," + zA + "," + xG + "," + yG + "," + zG + "," + evt.timestamp + "\n");
+                else
+                    writer.write("" + xA + "," + yA + "," + zA + "," + evt.timestamp + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
