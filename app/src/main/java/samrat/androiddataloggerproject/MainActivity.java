@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Date;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -110,15 +111,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     EditText fileName;
     //end of test code file name
     //testcode toggle button
-    ToggleButton toggleGyro = (ToggleButton) findViewById(R.id.toggleGyro); // initiate a toggle button
-    Boolean toggleGyroState = toggleGyro.isChecked();
+    ToggleButton toggleGyro;
+    Boolean toggleGyroState;
     //end of test code toggle button
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        toggleGyro = (ToggleButton) findViewById(R.id.toggleGyro); // initiate a toggle button
+        toggleGyroState = toggleGyro.isChecked();
 
         isRunning = false;
 
@@ -157,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return true;
             }
         });
+
         buttonStop.setOnTouchListener(new View.OnTouchListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
