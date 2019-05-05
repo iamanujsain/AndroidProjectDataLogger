@@ -78,6 +78,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.List;
+import java.util.Objects;
 //end of from github
 //test code
 import android.widget.EditText;
@@ -326,8 +327,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private String getStorageDir() {
-        return this.getExternalFilesDir(null).getAbsolutePath();
-        //  return "/storage/emulated/0/Android/data/";
+        return Objects.requireNonNull(this.getExternalFilesDir(null),
+                "The path to external file directory must not be null!")
+                .getAbsolutePath();
     }
 
     @Override
@@ -340,31 +342,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         LineData data = mChart.getData();
 
-        if ((data != null) && (isRunning == true)) {
+        if (isRunning)
+            if (data != null) {
 
-            ILineDataSet set = data.getDataSetByIndex(0);
-            // set.addEntry(...); // can be called as well
+                ILineDataSet set = data.getDataSetByIndex(0);
+                // set.addEntry(...); // can be called as well
 
-            if (set == null) {
-                set = createSet();
-                data.addDataSet(set);
-            }
+                if (set == null) {
+                    set = createSet();
+                    data.addDataSet(set);
+                }
 
 //            data.addEntry(new Entry(set.getEntryCount(), (float) (Math.random() * 80) + 10f), 0);
-            data.addEntry(new Entry(set.getEntryCount(), event.values[0] ), 0);
-            data.notifyDataChanged();
+                data.addEntry(new Entry(set.getEntryCount(), event.values[0]), 0);
+                data.notifyDataChanged();
 
-            // let the chart know it's data has changed
-            mChart.notifyDataSetChanged();
+                // let the chart know it's data has changed
+                mChart.notifyDataSetChanged();
 
-            // limit the number of visible entries
-            mChart.setVisibleXRangeMaximum(150);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
+                // limit the number of visible entries
+                mChart.setVisibleXRangeMaximum(150);
+                // mChart.setVisibleYRange(30, AxisDependency.LEFT);
 
-            // move to the latest entry
-            mChart.moveViewToX(data.getEntryCount());
+                // move to the latest entry
+                mChart.moveViewToX(data.getEntryCount());
 
-        }
+            }
         //TestCode
         /*
         LineData data2 = mChart2.getData();
@@ -451,56 +454,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent evt) {
+        float ax = 0, ay = 0, az = 0, gx = 0, gy = 0, gz = 0;
+
+        if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            ax = evt.values[0];
+            ay = evt.values[1];
+            az = evt.values[2];
+        }
+
+        if (evt.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            gx = evt.values[0];
+            gy = evt.values[1];
+            gz = evt.values[2];
+        }
 
         if(plotData){
             addEntry(evt);
             plotData = false;
         }
 
-        if(isRunning) {
-            try {
-                float xA=0, yA=0, zA=0, xG=0, yG=0, zG=0;
-                switch(evt.sensor.getType()) {
-                    case Sensor.TYPE_ACCELEROMETER:
-                        xA = evt.values[0];
-                        yA =  evt.values[1];
-                        zA = evt.values[2];
-                    case Sensor.TYPE_GYROSCOPE:
-                        xG = evt.values[0];
-                        yG =  evt.values[1];
-                        zG = evt.values[2];
-                        break;
-
-                    /*case Sensor.TYPE_ACCELEROMETER:
-                        writer.write(String.format("%d; ACC; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], 0.f, 0.f, 0.f));
-                        break;
-                    case Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
-                        writer.write(String.format("%d; GYRO_UN; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], evt.values[3], evt.values[4], evt.values[5]));
-                        break;
-                    case Sensor.TYPE_GYROSCOPE:
-                        writer.write(String.format("%d; GYRO; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], 0.f, 0.f, 0.f));
-                        break;
-                    case Sensor.TYPE_MAGNETIC_FIELD:
-                        writer.write(String.format("%d; MAG; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], 0.f, 0.f, 0.f));
-                        break;
-                    case Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
-                        writer.write(String.format("%d; MAG_UN; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], 0.f, 0.f, 0.f));
-                        break;
-                    case Sensor.TYPE_ROTATION_VECTOR:
-                        writer.write(String.format("%d; ROT; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], evt.values[3], 0.f, 0.f));
-                        break;
-                    case Sensor.TYPE_GAME_ROTATION_VECTOR:
-                        writer.write(String.format("%d; GAME_ROT; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], evt.values[3], 0.f, 0.f));
-                        break;*/
-                }
-                if(ToggleButtonState)
-                    writer.write("" + xA + "," + yA + "," + zA + "," + xG + "," + yG + "," + zG + "," + "\n");
-                else {
-                    writer.write("" + xA + "," + yA + "," + zA + "," + "\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if(isRunning) try {
+            writer.write("" + ax + "," + ay + "," + az + "," +
+                    gx + "," + gy + "," + gz + "," + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
