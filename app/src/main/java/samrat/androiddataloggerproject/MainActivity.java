@@ -110,11 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //test code file name
     EditText fileName;
     //end of test code file name
-    //testcode toggle button
-    ToggleButton toggleGyro;
-    Boolean toggleGyroState;
-    //end of test code toggle button
-
+    Boolean ToggleButtonState;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -122,8 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toggleGyro = (ToggleButton) findViewById(R.id.toggleGyro); // initiate a toggle button
-        toggleGyroState = toggleGyro.isChecked();
+
 
         isRunning = false;
 
@@ -134,18 +129,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //test code file name
         fileName  = (EditText) findViewById(R.id.fileName);
-        final String fileNameValue = fileName.getText().toString();
+
         //end of test code file name
 
         buttonStart.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                String fileNameValue = fileName.getText().toString();
+                ToggleButton GyroToggleButton = (ToggleButton) findViewById(R.id.toggleGyro); // initiate a toggle button
+                ToggleButtonState = GyroToggleButton.isChecked(); // check current state of a toggle button (true or false).
+
+                if (fileName.getText().toString().matches("")) {
+                    fileNameValue = System.currentTimeMillis() + "";
+                }
+
                 buttonStart.setEnabled(false);
                 buttonStop.setEnabled(true);
 
                 Log.d(TAG, "Writing to " + getStorageDir());
                 try {
-                    writer = new FileWriter(new File(getStorageDir(), "sensors_" + fileNameValue + System.currentTimeMillis() + ".csv"));
+                    writer = new FileWriter(new File(getStorageDir(), "sensors_" + fileNameValue + ".csv"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -167,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
+                fileName.setText("");
                 buttonStart.setEnabled(true);
                 buttonStop.setEnabled(false);
                 isRunning = false;
@@ -211,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mChart = (LineChart) findViewById(R.id.chart1);
 
         // enable description text
-        mChart.getDescription().setEnabled(true);
+        mChart.getDescription().setEnabled(false);
 
         // enable touch gestures
         mChart.setTouchEnabled(true);
@@ -251,7 +256,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         leftAxis.setDrawGridLines(false);
         leftAxis.setAxisMaximum(50f);
         leftAxis.setAxisMinimum(-50f);
-        leftAxis.setDrawGridLines(true);
 
         YAxis rightAxis = mChart.getAxisRight();
         rightAxis.setEnabled(false);
@@ -336,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         LineData data = mChart.getData();
 
-        if (data != null) {
+        if ((data != null) && (isRunning == true)) {
 
             ILineDataSet set = data.getDataSetByIndex(0);
             // set.addEntry(...); // can be called as well
@@ -489,10 +493,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         writer.write(String.format("%d; GAME_ROT; %f; %f; %f; %f; %f; %f\n", evt.timestamp, evt.values[0], evt.values[1], evt.values[2], evt.values[3], 0.f, 0.f));
                         break;*/
                 }
-                if(toggleGyroState = true)
-                    writer.write("" + xA + "," + yA + "," + zA + "," + xG + "," + yG + "," + zG + "," + evt.timestamp + "\n");
-                else
-                    writer.write("" + xA + "," + yA + "," + zA + "," + evt.timestamp + "\n");
+                if(ToggleButtonState)
+                    writer.write("" + xA + "," + yA + "," + zA + "," + xG + "," + yG + "," + zG + "," + "\n");
+                else {
+                    writer.write("" + xA + "," + yA + "," + zA + "," + "\n");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
